@@ -1,0 +1,274 @@
+<!doctype html>
+<html>
+<head>
+<title>User Dashboard</title>
+
+<style>
+* {
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+body {
+  display:flex;
+  background:#f5f5f5;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width:230px;
+  height:100vh;
+  background:#1f1f1f;
+  color:white;
+  position:fixed;
+  padding-top:20px;
+}
+
+.sidebar h2 {
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.sidebar button {
+  width:90%;
+  margin:10px;
+  padding:12px;
+  background:#2a2a2a;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.sidebar button:hover {
+  background:#333;
+}
+
+/* HEADER */
+.header {
+  position:fixed;
+  left:230px;
+  right:0;
+  top:0;
+  height:60px;
+  background:white;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 20px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* MAIN */
+.main {
+  margin-left:230px;
+  margin-top:60px;
+  padding:20px;
+  padding-bottom:80px;
+  width:100%;
+}
+
+/* CARD */
+.card {
+  background:white;
+  padding:20px;
+  margin-bottom:20px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* TABLE */
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th {
+  background:#111;
+  color:white;
+  padding:10px;
+}
+
+td {
+  padding:10px;
+  border-bottom:1px solid #eee;
+  text-align:center;
+}
+
+/* INPUT */
+input, select {
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+/* BUTTON */
+button {
+  padding:8px 12px;
+  border:none;
+  border-radius:6px;
+  background:#111;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover {
+  background:#333;
+}
+
+/* SECTION */
+.section { display:none; }
+.active { display:block; }
+
+/* FLASH MESSAGE */
+.flash {
+  background:#d4edda;
+  color:#155724;
+  padding:10px;
+  border-radius:6px;
+  margin-bottom:10px;
+  text-align:center;
+}
+
+/* FOOTER */
+.footer {
+  position:fixed;
+  left:230px;
+  right:0;
+  bottom:0;
+  height:50px;
+  background:#111;
+  color:#aaa;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 -2px 10px rgba(0,0,0,0.1);
+}
+
+/* RESPONSIVE */
+@media (max-width:768px){
+  .sidebar { width:60px; }
+  .header { left:60px; }
+  .main { margin-left:60px; }
+  .footer { left:60px; }
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>User</h2>
+  <button onclick="showSection('tasks')">My Tasks</button>
+  <button onclick="showSection('password')">Change Password</button>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <h3>User Dashboard</h3>
+  <a href="/logout"><button>Logout</button></a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TASKS -->
+<div id="tasks" class="section active">
+  <div class="card">
+    <h3>My Tasks</h3>
+
+    <!-- FLASH MESSAGE -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{msg}}</div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <table>
+      <tr>
+        <th>Task</th>
+        <th>Status</th>
+        <th>Project</th>
+        <th>Deadline</th>
+        <th>Update</th>
+      </tr>
+
+      {% for t in tasks %}
+      <tr>
+        <form action="/update_my_task/{{t[0]}}" method="post">
+
+          <td>{{t[1]}}</td>
+
+          <td>
+            <select name="status">
+              <option value="todo" {% if t[2]=='todo' %}selected{% endif %}>todo</option>
+              <option value="inprogress" {% if t[2]=='inprogress' %}selected{% endif %}>inprogress</option>
+              <option value="done" {% if t[2]=='done' %}selected{% endif %}>done</option>
+            </select>
+          </td>
+
+          <td>{{t[3]}}</td>
+
+          <td>
+            {{ t[4].strftime('%d-%m-%Y %H:%M') if t[4] else 'N/A' }}
+          </td>
+
+          <td>
+            <button>Update</button>
+          </td>
+
+        </form>
+      </tr>
+      {% endfor %}
+
+    </table>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD -->
+<div id="password" class="section">
+  <div class="card">
+    <h3>Change Password</h3>
+
+    <!-- FLASH MESSAGE -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{msg}}</div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form action="/change_password" method="post">
+      <input type="password" name="old_password" placeholder="Old Password" required>
+      <input type="password" name="new_password" placeholder="New Password" required>
+      <button type="submit">Update Password</button>
+    </form>
+
+  </div>
+</div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  © 2026 Team Task Manager
+</div>
+
+<script>
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>
+
+</body>
+</html>
